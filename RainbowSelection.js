@@ -25,6 +25,7 @@
 // @name        Rainbow Selection
 // @author      Anveshak, Fractalism
 // @description Adapted from Shadow Selection by Anveshak. Create dynamic text shadows for highlighted text using built-in algorithms or perhaps write your very own!
+// @namespace   Fractalism 
 // @include     *
 // @version     0.0.1
 // @license MIT
