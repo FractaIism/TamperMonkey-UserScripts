@@ -2,7 +2,7 @@
 // @name         YouTaker Download mp3
 // @namespace    http://tampermonkey.net/
 // @version      0.0.1
-// @description  Provide download link for YouTaker music
+// @description  Provide download link for YouTaker music (right click "Download link" right under the video -> "Save As", remember to give it a proper name!)
 // @author       Fractalism
 // @match        http*://www.youtaker.com/video/*
 // @grant        none
