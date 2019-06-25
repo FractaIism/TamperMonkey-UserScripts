@@ -1,17 +1,17 @@
 // ==UserScript==
 // @name         YouTaker Download mp3
 // @namespace    http://tampermonkey.net/
-// @version      0.0.1
-// @description  Provide download link for YouTaker music (right click "Download link" right under the video -> "Save As", remember to give it a proper name!)
+// @version      0.1.0
+// @description  Provide download link for YouTaker music
 // @author       Fractalism
 // @match        http*://www.youtaker.com/video/*
-// @grant        none
-// @updateURL    https://github.com/FractaIism/TamperMonkey-UserScripts/blob/master/YouTaker%20Download%20mp3.js
+// @grant        GM_download
 // ==/UserScript==
 
 (function() {
     'use strict';
 
+    var title = document.getElementById("tr1").innerText
     var text_replace = document.getElementById("kdd").firstChild
     var kdd_style = document.createElement("style")
     kdd_style.innerHTML = `
@@ -20,13 +20,26 @@
         border: 1px solid black;
         border-radius: 5px;
         padding: 3px 5px 3px 5px;
-        color: darkseagreen;
     }`
+    text_replace.style.color = "darkseagreen"
     document.head.appendChild(kdd_style)
     if(typeof musicfile === "undefined") {
         text_replace.innerHTML = "Could not find music file"
         return
     }
+    var download_func = function(event) {
+        GM_download({
+            url: musicfile,
+            name: title,
+            saveAs: false,
+            onerror: function(download) {
+                alert("Download failed\nError: " + download.error + "\nDetails: " + download.details.current + "\n\nTry right click -> 'Save As'")
+            }
+        })
+        event.preventDefault()
+    }
+
     text_replace.href = musicfile
-    text_replace.innerHTML = "Download link"
+    text_replace.addEventListener("click", download_func)
+    text_replace.innerHTML = "Download mp3"
 })();
