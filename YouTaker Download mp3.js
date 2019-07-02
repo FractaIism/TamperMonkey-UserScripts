@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTaker Download mp3
 // @namespace    http://tampermonkey.net/
-// @version      0.1.1
+// @version      0.1.2
 // @description  Provide download button for YouTaker music
 // @author       Fractalism
 // @match        http*://www.youtaker.com/video/*
@@ -20,7 +20,7 @@
         border: 1px solid black;
         border-radius: 5px;
         padding: 3px 5px 3px 5px;
-        cursor: wait;
+        cursor: pointer;
     }`
     text_replace.style.color = "darkseagreen"
     document.head.appendChild(kdd_style)
