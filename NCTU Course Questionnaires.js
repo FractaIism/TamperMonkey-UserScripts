@@ -34,6 +34,7 @@
 			}
 		})
 	})
+	Array.from(document.querySelectorAll('input[type=checkbox]')).forEach((item)=>{item.checked=true});
 	window.scrollTo(0, document.body.scrollHeight);
 	document.querySelector('input[name=qCode]').focus();
 })();
