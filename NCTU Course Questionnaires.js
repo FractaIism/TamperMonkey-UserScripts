@@ -34,5 +34,6 @@
 			}
 		})
 	})
+	window.scrollTo(0, document.body.scrollHeight);
 	document.querySelector('input[name=qCode]').focus();
 })();
