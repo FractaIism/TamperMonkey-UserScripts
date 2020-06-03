@@ -36,5 +36,7 @@
 	})
 	Array.from(document.querySelectorAll('input[type=checkbox]')).forEach((item)=>{item.checked=true});
 	window.scrollTo(0, document.body.scrollHeight);
-	document.querySelector('input[name=qCode]').focus();
+	if( !(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) ) {
+		document.querySelector('input[name=qCode]').focus();
+	}
 })();
