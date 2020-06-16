@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NCTU Course Questionnaires
 // @namespace    https://github.com/FractaIism/TamperMonkey-UserScripts
-// @version      1.0
+// @version      1.1
 // @description  Autofill course questionnaires
 // @author       Fractalism
 // @match        http*://course.nctu.edu.tw/TeachPoll/question.asp
@@ -26,25 +26,49 @@
 	}); //relative probability of each answer appearing if randomize is set (will be normalized so the sum of probabilities is 1). If a choice is not present, it will be ignored and normalization will be carried out with only the remaining choices.
 
 
+	// function to fill out questionnaire
+	function main() {
+		let parts = document.querySelectorAll('table.stripeMe');
+		Array.from(parts).forEach((part, part_index) => {
+			let rows = part.getElementsByTagName('tr');
+			Array.from(rows).forEach((row, row_index) => {
+				let buttons = row.querySelectorAll('input[type=radio]');
+				if (buttons.length == 0) return;
+				buttons[getAns(part_index, buttons.length) - 1].checked = true;
+			})
+		});
 
-	let parts = document.querySelectorAll('table.stripeMe');
-	Array.from(parts).forEach((part, part_index) => {
-		let rows = part.getElementsByTagName('tr');
-		Array.from(rows).forEach((row, row_index) => {
-			let buttons = row.querySelectorAll('input[type=radio]');
-			if (buttons.length == 0) return;
-			buttons[getAns(part_index, buttons.length) - 1].checked = true;
-		})
-	});
+		// check all checkboxes
+		Array.from(document.querySelectorAll('input[type=checkbox]')).forEach((item) => item.checked = true);
+	};
 
-	// check all checkboxes
-	Array.from(document.querySelectorAll('input[type=checkbox]')).forEach((item) => {
-		item.checked = true
-	});
+	main();
 	// manually solve captcha
 	window.scrollTo(0, document.body.scrollHeight);
 	document.querySelector('input[name=qCode]').focus();
 
+	(function makeMenu() {
+		// a place for buttons (additional functionality)
+		var menu = document.createElement('div');
+		menu.style.position = 'absolute';
+		menu.style.top = '15px';
+		menu.style.right = '40px';
+		document.body.appendChild(menu);
+
+		// add refill button
+		var refillBtn = document.createElement('button');
+		refillBtn.style.margin = '7px 7px 7px 7px';
+		refillBtn.innerText = '自動填答';
+		refillBtn.addEventListener('click', main);
+		menu.appendChild(refillBtn);
+
+		// add reload button
+		var reloadBtn = document.createElement('button');
+		reloadBtn.style.margin = '7px 7px 7px 7px';
+		reloadBtn.innerText = '重新整理';
+		reloadBtn.addEventListener('click', location.reload.bind(window.location));
+		menu.appendChild(reloadBtn);
+	})();
 
 
 	// opt_len: number of options
