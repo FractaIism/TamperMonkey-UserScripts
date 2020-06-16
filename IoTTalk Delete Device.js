@@ -123,6 +123,7 @@
 		window.device_matches = matches;
 		SearchButton.replaceWith(DeleteButton);
 		HintButton.replaceWith(CancelButton);
+		document.getElementById('find-d_name').focus();
 	}
 
 	function delete_devices() {
