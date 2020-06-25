@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IoTTalk Delete Device
 // @namespace    Fractalism
-// @version      1.1
+// @version      1.1.1
 // @description  Delete multiple devices in IoTTalk using regular expressions
 // @author       Fractalism
 // @match        http*://*.iottalk.tw/list_all
@@ -44,6 +44,11 @@
         MainUI.style.borderRadius = '10px';
 
         var d_name_Input = document.getElementById('d_name-input');
+        d_name_Input.onkeydown = function () {
+            if (!(event.which == 13 || event.keyCode == 13)) {
+                switch_display(1);
+            }
+        }
 
         var SearchDiv = document.getElementById('search-div');
         SearchDiv.style.position = 'relative'; // to position HintButton correctly
@@ -168,13 +173,24 @@
         console.log(`Found ${matches.length+skipped.length} devices (${matches.length} matched, ${skipped.length} skipped)`);
         console.groupCollapsed(`Matched devices (${matches.length})`);
         for (let i = 0; i < matches.length; ++i) {
-            console.log(`Match ${i+1}:\n`, matches[i][0], '\n', matches[i][1]);
-        }
+            let d_name, dm_name;
+            let lines = matches[i][0].nodeValue.split('\n');
+            for (let line of lines) {
+                if (line.search('d_name:') != -1) d_name = line.trim();
+                if (line.search('dm_name:') != -1) dm_name = line.trim();
+            }
+            console.log(`Match ${i+1}:\n   ${d_name}\n   ${dm_name}\n`, matches[i][1]);
+        };
         console.groupEnd();
         console.groupCollapsed(`Skipped devices (${skipped.length})`);
         for (let i = 0; i < skipped.length; ++i) {
-            console.log();
-            console.log(`Skip ${i+1}:\n`, skipped[i][0], '\n', skipped[i][1]);
+            let d_name, dm_name;
+            let lines = skipped[i][0].nodeValue.split('\n');
+            for (let line of lines) {
+                if (line.search('d_name:') != -1) d_name = line.trim();
+                if (line.search('dm_name:') != -1) dm_name = line.trim();
+            }
+            console.log(`Skip ${i+1}:\n   ${d_name}\n   ${dm_name}\n`, skipped[i][1]);
         }
         console.groupEnd();
         window.device_matches = matches;
