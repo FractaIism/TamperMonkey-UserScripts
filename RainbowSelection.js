@@ -27,100 +27,105 @@
 // @description Adapted from Shadow Selection by Anveshak. Create custom dynamic text shadows for highlighted text.
 // @namespace   Fractalism
 // @include     *
-// @version     0.0.2
+// @version     0.0.3
 // @license MIT
 // @copyright   2019, Anveshak
 // @icon        http://oi63.tinypic.com/142f1tx.jpg
 // @updateURL   https://raw.githubusercontent.com/FractaIism/TamperMonkey-UserScripts/master/RainbowSelection.js
 // ==/UserScript==
 
-(function(){
+(function () {
     'use strict';
-    var style=document.createElement("style");
-
-//For Firefox (Gecko) Browser
-    style.innerHTML = "  ::-moz-selection { color: #000; background: none repeat scroll 100% 0% transparent;text-shadow: 0px 0px 2px #0048FF;} a::selection { color: #000; background: none repeat scroll 0% 0% transparent;text-shadow: 2px 2px 2px #0048FF;}";
-//For Chrome (Blink) Browser
-    style.innerHTML += " ::selection { color: #000; background: none repeat scroll 0% 0% transparent;text-shadow: 2px 0px 2px #0048FF;}  input::selection { color: #3356C6; background: none repeat scroll 0% 0% transparent;} a::selection { color: #000; background: none repeat scroll 0% 0% transparent;text-shadow: 2px 0px 2px #0048FF;}";
-//For WebKit Browser
-    style.innerHTML += " ::-webkit-selection { color: #000; background: none repeat scroll 0% 0% transparent;text-shadow: 0px 0px 2px #0048FF;} a::selection { color: #000; background: none repeat scroll 0% 0% transparent;text-shadow: 2px 2px 2px #0048FF;}";
-//For Other Browsers
-    style.innerHTML += " ::-ms-selection { color: #000; background: none repeat scroll 0% 0% transparent;text-shadow: 0px 0px 2px #0048FF;} a::selection { color: #000; background: none repeat scroll 0% 0% transparent;text-shadow: 2px 2px 2px #0048FF;}";
-    style.innerHTML += " ::-o-selection { color: #000; background: none repeat scroll 0% 0% transparent;text-shadow: 0px 0px 2px #0048FF;} a::selection { color: #000; background: none repeat scroll 0% 0% transparent;text-shadow: 2px 2px 2px #0048FF;}";
-
-    document.head.appendChild(style);
 
     // Parameters
+
     // browser: Firefox=1, Chrome=2, WebKit=3, Other=4, or use -1 to try them all
-    // shadow_count: number of text shadows to apply
-    // x_offset, y_offset: relative position of each text shadow in pixels, stored as array (right and down are the positive directions)
-    // blur: blur radius of each shadow
+    const browser = 2;
+
+    // shadow syntax 2
+    //const shadow2 = ;
+    // shadow_list: a list of shadow objects that define each text shadow    
+    // shadow syntax: shadow(offset_x, offset_y, blur, RGBA(R, G, B, A))
+    // offset_x, offset_y: relative position of the text shadow in pixels (right and down are the positive directions)
+    // blur: blur radius of the text shadow in pixels
     // color: initial color of each shadow in RGBA, where 0<=R,G,B<=255 and 0<=A<=1
-    // algorithm: algorithm to use for updating text shadows (enclosed within a function for technical reasons)
+    // Note: not all algorithms make use of the color parameter
+    var shadow_list = [
+        shadow(3, 4, 5, RGBA(255, 255, 0, 0.7)),
+        shadow(-3, -4, 5, RGBA(0, 255, 255, 0.5)),
+        //shadow(1, 1, 3, RGBA(0, 0, 0, 0.6)),
+    ];
+
+    // algorithm: algorithm to use for updating text shadows
+    // (using multiple algorithms might produce undefined behavior)
+    const algorithm = function () {
+        //fluorescence(25);
+        //discrete_cycle();
+        //randomize(true);
+        orbit(true, 0.4);
+        continuous_cycle(["F640EA", "2FF", "1DF616", "EF1", "F62C16"], 10);
+    };
+
     // exec_interval: update text shadows every x milliseconds
-    const browser = 2
-    const shadow_count = 1
-    const x_offset = [0]
-    const y_offset = [0]
-    const blur     = [5]
-    const color    = [{R:0,G:255,B:255,A:1}]
-    const algorithm = function() {
-        continuous_cycle(["F640EA","21F9F2","1DF616","EFF616","F62C16"], 10) // change algorithm here (including arguments)
-    }
-    const exec_interval = 200
+    const exec_interval = 200;
+
+
 
     // Algorithms
 
     // Fluorescence:
     // RGB(0,0,0) -> RGB(255,0,0) -> RGB(255,255,0) -> RGB(255,255,255) -> RGB(0,255,255) -> RGB(0,0,255) -> RGB(0,0,0) -> start over
-    // Note: Made for single shadow
-    var fluorescence = function def_algo(delta = 20) {
+    // delta: step size, how much to advance R, G, or B on each iteration
+    // Note: Single shadow recommended
+    // Note: Same as continuous_cycle(["000000","FF0000","FFFF00","FFFFFF","00FFFF","0000FF"])
+    function fluorescence(delta = 20) {
         // Initialize static variables upon first execution
-        if(typeof def_algo.mode === "undefined") {
-            def_algo.mode = 1
-            def_algo.delta = delta // step size
+        if (typeof fluorescence.stage === "undefined") {
+            fluorescence.stage = 1; // the current state of the algorithm
         }
 
-        for(let i = 0; i < shadow_count; ++i) {
-            let colors = shadow_list[i].color
-            switch(def_algo.mode) {
+        for (let i = 0; i < shadow_count; ++i) {
+            let color = shadow_list[i].color;
+            switch (fluorescence.stage) {
                 case 1:
-                    (colors.R < 255) ? (colors.R = Math.min(colors.R + def_algo.delta, 255)) : (++def_algo.mode)
+                    (color.R < 255) ? (color.R = Math.min(color.R + delta, 255)) : (++fluorescence.stage);
                     break;
                 case 2:
-                     (colors.G < 255) ? (colors.G = Math.min(colors.G + def_algo.delta, 255)) : (++def_algo.mode)
+                    (color.G < 255) ? (color.G = Math.min(color.G + delta, 255)) : (++fluorescence.stage);
                     break;
                 case 3:
-                    (colors.B < 255) ? (colors.B = Math.min(colors.B + def_algo.delta, 255)) : (++def_algo.mode)
+                    (color.B < 255) ? (color.B = Math.min(color.B + delta, 255)) : (++fluorescence.stage);
                     break;
                 case 4:
-                    (colors.R > 0) ? (colors.R = Math.max(colors.R - def_algo.delta, 0)) : (++def_algo.mode)
+                    (color.R > 0) ? (color.R = Math.max(color.R - delta, 0)) : (++fluorescence.stage);
                     break;
                 case 5:
-                    (colors.G > 0) ? (colors.G = Math.max(colors.G - def_algo.delta, 0)) : (++def_algo.mode)
+                    (color.G > 0) ? (color.G = Math.max(color.G - delta, 0)) : (++fluorescence.stage);
                     break;
                 case 6:
-                    (colors.B > 0) ? (colors.B = Math.max(colors.B - def_algo.delta, 0)) : (def_algo.mode = 1)
+                    (color.B > 0) ? (color.B = Math.max(color.B - delta, 0)) : (fluorescence.stage = 1);
                     break;
+                default:
+                    throw `Error at ${fluorescence.name}`;
             }
         }
     }
 
-    // Discrete Cyclic:
+    // Discrete Cycle:
     // Cycle between red, green, and blue
-    // Note: Made for single shadow
-    var discrete_cyclic = function() {
-        for(let i = 0; i < shadow_count; ++i) {
-            let colors = shadow_list[i].color
-            if(colors.R) {
-                colors.R = 0
-                colors.G = 255
-            }else if(colors.G){
-                colors.G = 0
-                colors.B = 255
-            }else{
-                colors.B = 0
-                colors.R = 255
+    // Note: Bad for the eyes, not recommended
+    function discrete_cycle() {
+        for (let i = 0; i < shadow_count; ++i) {
+            let color = shadow_list[i].color;
+            if (color.R) {
+                color.R = 0;
+                color.G = 255;
+            } else if (color.G) {
+                color.G = 0;
+                color.B = 255;
+            } else {
+                color.B = 0;
+                color.R = 255;
             }
         }
     }
@@ -128,57 +133,42 @@
     // Randomize:
     // Assign random color coordinates
     // Note: Made for single shadow
-    var randomize = function(use_alpha = false) {
-        for(let i = 0; i < shadow_count; ++i) {
-            let colors = shadow_list[i].color
-            colors.R = Math.floor(Math.random() * 256)
-            colors.G = Math.floor(Math.random() * 256)
-            colors.B = Math.floor(Math.random() * 256)
-            if(use_alpha){
-                colors.A = Math.random()
+    function randomize(use_alpha = false) {
+        for (let i = 0; i < shadow_count; ++i) {
+            let color = shadow_list[i].color;
+            color.R = Math.floor(Math.random() * 256);
+            color.G = Math.floor(Math.random() * 256);
+            color.B = Math.floor(Math.random() * 256);
+            if (use_alpha) {
+                color.A = Math.random();
             }
         }
     }
 
     // Orbit:
-    // Shadows orbit around the letters counterclockwise
-    // counterclockwise dir: 0=left 1=down 2=right 3=up
-    // clockwise dir: 4=right 5=down 6=left 7=up
+    // Shadows orbit around text
+    // phaseStep: how much to advance the phase on each iteration
     // Note: Initial x,y offsets must be nonzero
-    // Note: Currently the only one made for multiple shadows
-    var orbit = function orb(counterclockwise = true) {
-        if(typeof orb.star === "undefined") {
-            orb.star = []
-            for(let i = 0; i < shadow_count; ++i){
-                let star = shadow_list[i]
-                orb.star[i] = ({
-                    x_max: (star.x_offset > 0) ? (star.x_offset) : (-star.x_offset),
-                    y_max: (star.y_offset > 0) ? (star.y_offset) : (-star.y_offset),
-                    dir: (counterclockwise)
-                    ? ((star.x_offset > 0) ? ((star.y_offset > 0) ? (0) : (3)) : ((star.y_offset > 0) ? (1) : (2)))
-                    : ((star.x_offset > 0) ? ((star.y_offset > 0) ? (4) : (5)) : ((star.y_offset > 0) ? (7) : (6)))
-                })
+    // Note: Made for multiple shadows
+    function orbit(counterclockwise = true, phaseStep = 0.25) {
+        if (typeof orbit.stars === "undefined") {
+            orbit.stars = [];
+            for (let i = 0; i < shadow_count; ++i) {
+                let star = shadow_list[i];
+                orbit.stars[i] = {
+                    radius: Math.sqrt(Math.pow(star.offset_x, 2) + Math.pow(star.offset_y, 2)),
+                    phase: Math.atan(star.offset_y / star.offset_x),
+                };
+                if (orbit.stars[i].radius == 0) throw "Radius cannot be zero";
             }
         }
 
-        for(let i = 0; i < shadow_count; ++i) {
-            var shadow = shadow_list[i]
-            var star = orb.star[i]
-            if(i==0) console.log(star.dir)
-            switch(star.dir) {
-                case 0: case 6: // left
-                    (shadow.x_offset > -star.x_max) ? (--shadow.x_offset) : (++star.dir, --i)
-                    break
-                case 1: case 5: // down
-                    (shadow.y_offset < star.y_max) ? (++shadow.y_offset) : (++star.dir, --i)
-                    break
-                case 2: case 4: // right
-                    (shadow.x_offset < star.x_max) ? (++shadow.x_offset) : (++star.dir, --i)
-                    break
-                case 3: case 7: // up, direction loopback
-                    (shadow.y_offset > -star.y_max) ? (--shadow.y_offset) : (star.dir -= 3, --i)
-                    break
-            }
+        for (let i = 0; i < shadow_count; ++i) {
+            var shadow = shadow_list[i];
+            var star = orbit.stars[i];
+            star.phase = (star.phase + (counterclockwise ? phaseStep : -phaseStep)) % (2 * Math.PI);
+            shadow.offset_x = star.radius * Math.cos(star.phase);
+            shadow.offset_y = -star.radius * Math.sin(star.phase);
         }
     }
 
@@ -186,88 +176,152 @@
     // Cycle between any set of hex-specified colors smoothly (or set stages=1 for a discrete effect)
     // Note: Specify at least two colors
     // Note: Made for single shadow
-    var continuous_cycle = function cont_cycle(color_list = ["ff0000", "00ff00", "0000ff"], stages = 10) {
+    function continuous_cycle(color_list = ["ff0000", "00ff00", "0000ff"], stages = 10) {
         function toRGB(color_code) {
-            var color={R:0, G:0, B:0}
-            color.R = parseInt("0x" + color_code.substr(0,2))
-            color.G = parseInt("0x" + color_code.substr(2,2))
-            color.B = parseInt("0x" + color_code.substr(4,2))
-            return color
+            if (color_code.length == 6) {
+                return {
+                    R: parseInt(color_code.substr(0, 2), 16),
+                    G: parseInt(color_code.substr(2, 2), 16),
+                    B: parseInt(color_code.substr(4, 2), 16),
+                }
+            } else if (color_code.length == 3) {
+                return {
+                    R: parseInt(color_code.substr(0, 1).repeat(2), 16),
+                    G: parseInt(color_code.substr(1, 1).repeat(2), 16),
+                    B: parseInt(color_code.substr(2, 1).repeat(2), 16),
+                }
+            } else {
+                throw "Wrong color code"
+            }
         }
 
-        if(typeof cont_cycle.src_color === "undefined") {
-            cont_cycle.dst_index = 1
-            cont_cycle.src_color = toRGB(color_list[0])
-            cont_cycle.dst_color = toRGB(color_list[1])
-            cont_cycle.step = [ (cont_cycle.dst_color.R - cont_cycle.src_color.R) / stages,
-                                (cont_cycle.dst_color.G - cont_cycle.src_color.G) / stages,
-                                (cont_cycle.dst_color.B - cont_cycle.src_color.B) / stages ]
-            cont_cycle.stage = 0
+        if (typeof continuous_cycle.src_color === "undefined") {
+            continuous_cycle.dst_index = 1;
+            continuous_cycle.src_color = toRGB(color_list[0]);
+            continuous_cycle.dst_color = toRGB(color_list[1]);
+            continuous_cycle.step = [
+                (continuous_cycle.dst_color.R - continuous_cycle.src_color.R) / stages,
+                (continuous_cycle.dst_color.G - continuous_cycle.src_color.G) / stages,
+                (continuous_cycle.dst_color.B - continuous_cycle.src_color.B) / stages,
+            ];
+            continuous_cycle.stage = 0;
         }
-        
-        shadow_list[0].color.R = cont_cycle.src_color.R + Math.round(cont_cycle.stage * cont_cycle.step[0])
-        shadow_list[0].color.G = cont_cycle.src_color.G + Math.round(cont_cycle.stage * cont_cycle.step[1])
-        shadow_list[0].color.B = cont_cycle.src_color.B + Math.round(cont_cycle.stage * cont_cycle.step[2])
-        ++cont_cycle.stage
 
-        if(cont_cycle.stage == stages) {
-            cont_cycle.src_color = cont_cycle.dst_color
-            cont_cycle.dst_index = (cont_cycle.dst_index == color_list.length - 1) ? (0) : (cont_cycle.dst_index + 1)
-            cont_cycle.dst_color = toRGB(color_list[cont_cycle.dst_index])
-            cont_cycle.step=[   (cont_cycle.dst_color.R - cont_cycle.src_color.R) / stages,
-                                (cont_cycle.dst_color.G - cont_cycle.src_color.G) / stages,
-                                (cont_cycle.dst_color.B - cont_cycle.src_color.B) / stages ]
-            cont_cycle.stage=0
+        for (let i = 0; i < shadow_count; ++i) {
+            shadow_list[i].color.R = continuous_cycle.src_color.R + Math.round(continuous_cycle.stage * continuous_cycle.step[0]);
+            shadow_list[i].color.G = continuous_cycle.src_color.G + Math.round(continuous_cycle.stage * continuous_cycle.step[1]);
+            shadow_list[i].color.B = continuous_cycle.src_color.B + Math.round(continuous_cycle.stage * continuous_cycle.step[2]);
+        }
+        ++continuous_cycle.stage;
+
+        if (continuous_cycle.stage == stages) {
+            continuous_cycle.src_color = continuous_cycle.dst_color;
+            continuous_cycle.dst_index = (continuous_cycle.dst_index == color_list.length - 1) ? (0) : (continuous_cycle.dst_index + 1);
+            continuous_cycle.dst_color = toRGB(color_list[continuous_cycle.dst_index]);
+            continuous_cycle.step = [
+                (continuous_cycle.dst_color.R - continuous_cycle.src_color.R) / stages,
+                (continuous_cycle.dst_color.G - continuous_cycle.src_color.G) / stages,
+                (continuous_cycle.dst_color.B - continuous_cycle.src_color.B) / stages,
+            ];
+            continuous_cycle.stage = 0;
         }
     }
+
+
 
     // Main program
-    var shadow = function(x_offset, y_offset, blur, color) {
-        return {
-            x_offset: x_offset,
-            y_offset: y_offset,
-            blur: blur,
-            color: color
+
+    var shadow_count = shadow_list.length;
+    var styleNode = document.createElement("style");
+    document.head.appendChild(styleNode);
+
+    // execute the selected algorithm once to obtain the next set of text shadows, then apply it to the document
+    function update_shadows() {
+        algorithm();
+        var shadow_str = "";
+        for (let i = 0; i < shadow_count; ++i) {
+            if (i > 0) shadow_str += ",";
+            shadow_str += shadow_list[i].offset_x + "px ";
+            shadow_str += shadow_list[i].offset_y + "px ";
+            shadow_str += shadow_list[i].blur + "px ";
+            shadow_str += `rgba(${shadow_list[i].color.R}, ${shadow_list[i].color.G}, ${shadow_list[i].color.B}, ${shadow_list[i].color.A})`;
         }
-    }
-    var shadow_list = []
-    for(let i = 0; i < shadow_count; ++i) {
-        shadow_list.push(shadow(x_offset[i], y_offset[i], blur[i], color[i]))
-    }
-    var update_shadows = function() {
-        algorithm()
-        var shadow_str = ""
-        for(let i = 0; i < shadow_count; ++i){
-            if(i > 0) shadow_str += ","
-            shadow_str += shadow_list[i].x_offset + "px "
-            shadow_str += shadow_list[i].y_offset + "px "
-            shadow_str += shadow_list[i].blur + "px "
-            shadow_str += `rgba(${shadow_list[i].color.R}, ${shadow_list[i].color.G}, ${shadow_list[i].color.B}, ${shadow_list[i].color.A})`
+
+        var selection_Content = `color: #000; background: none; text-shadow: ${shadow_str};`;
+        var a_selection_Content = `color: #000; background: none; text-shadow: ${shadow_str};`;
+        var input_selection_Content = `color: #3356C6; background: none;`;
+
+        var style_str;
+        switch (browser) {
+            case 1:
+                style_str = `
+                    ::-moz-selection { ${selection_Content} }
+                    a::selection { ${a_selection_Content} }
+                `;
+                break;
+            case 2:
+                style_str = `
+                    ::selection { ${selection_Content} }
+                    a::selection { ${a_selection_Content} }
+                    input::selection { ${input_selection_Content} }
+                `;
+                break;
+            case 3:
+                style_str = `
+                    ::-webkit-selection { ${selection_Content} }
+                    a::selection { ${a_selection_Content} }
+                `;
+                break;
+            case 4:
+                style_str = `
+                    ::-ms-selection { ${selection_Content} }
+                    ::-o-selection { ${selection_Content} }
+                    a::selection { ${a_selection_Content} }
+                `;
+                break;
+            default:
+                style_str = `
+                    ::-moz-selection { ${selection_Content} }
+                    ::-webkit-selection { ${selection_Content} }
+                    ::-ms-selection { ${selection_Content} }
+                    ::-o-selection { ${selection_Content} }
+                    ::selection { ${selection_Content} }
+                    a::selection { ${a_selection_Content} }
+                    input::selection { ${input_selection_Content} }
+                `;
         }
-        var style_str = ""
-        if(browser == 1 || browser == -1) { // Firefox
-            style_str += `::-moz-selection { color: #000; background: none repeat scroll 100% 0% transparent; text-shadow: ${shadow_str};}
-                          a::selection { color: #000; background: none repeat scroll 0% 0% transparent; text-shadow: ${shadow_str};}`
-        }
-        if(browser == 2 || browser == -1) { // Chrome
-            style_str += `::selection { color: #000; background: none repeat scroll 0% 0% transparent; text-shadow: ${shadow_str};}
-                          input::selection { color: #3356C6; background: none repeat scroll 0% 0% transparent;}
-                          a::selection { color: #000; background: none repeat scroll 0% 0% transparent; text-shadow: ${shadow_str};}"`
-        }
-        if(browser == 3 || browser == -1) { // WebKit
-            style_str += `::-webkit-selection { color: #000; background: none repeat scroll 0% 0% transparent; text-shadow: ${shadow_str};}
-                          a::selection { color: #000; background: none repeat scroll 0% 0% transparent; text-shadow: ${shadow_str};}`
-        }
-        if(browser == 4 || browser == -1) { // Other
-            style_str += `::-ms-selection { color: #000; background: none repeat scroll 0% 0% transparent; text-shadow: ${shadow_str};}
-                          a::selection { color: #000; background: none repeat scroll 0% 0% transparent; text-shadow: ${shadow_str};}
-                          ::-o-selection { color: #000; background: none repeat scroll 0% 0% transparent; text-shadow: ${shadow_str};}
-                          a::selection { color: #000; background: none repeat scroll 0% 0% transparent; text-shadow: ${shadow_str};}`
-        }
-        style.innerHTML = style_str
+        styleNode.innerHTML = style_str;
     }
 
     // Let the party begin
-    setInterval(update_shadows, exec_interval)
+    setInterval(function () {
+        try {
+            update_shadows();
+        } catch (err) {
+            console.error("Error encountered:", err);
+        }
+    }, exec_interval);
+
+
+
+    // utility functions
+
+    function RGBA(red, green, blue, alpha) {
+        return {
+            R: red,
+            G: green,
+            B: blue,
+            A: alpha,
+        };
+    }
+
+    function shadow(offset_x, offset_y, blur, color) {
+        return {
+            offset_x: offset_x,
+            offset_y: offset_y,
+            blur: blur,
+            color: color,
+        }
+    }
 
 })()
