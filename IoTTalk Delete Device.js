@@ -16,6 +16,7 @@
         var MainUI = document.createElement('div');
         document.body.appendChild(MainUI);
 
+        MainUI.id = 'main-UI';
         MainUI.innerHTML = `
             <form action='javascript:void(0)'>
                 <span>Find and delete</span><br>
@@ -29,12 +30,12 @@
                     <button id='cancel-btn'>Cancel</button>
                 </div>
                 <div id='param-div'>
-                    <label><input type='checkbox' id='no_project'><small>Match unused devices only</small></label>
+                    <label><input type='checkbox' id='case_sensitive'><small>Case-sensitive search</small></label><br>
+                    <label><input type='checkbox' id='no_project' checked><small>Match unused devices only</small></label>
                 </div>
             </form>
 	`;
 
-        MainUI.id = 'main-UI';
         MainUI.style.position = 'fixed';
         MainUI.style.top = '20px'; // pixels
         MainUI.style.right = '20px'; // pixels
@@ -62,6 +63,7 @@
         var SearchButton = document.getElementById('search-btn');
         SearchButton.onclick = function () {
             var params = {
+                case_sensitive: document.getElementById('case_sensitive').checked,
                 no_project: document.getElementById('no_project').checked,
             }
             find_devices(params);
@@ -94,7 +96,7 @@
         HintButton.style.color = 'black';
         HintButton.style.backgroundColor = 'white';
         HintButton.style.padding = '0px';
-        HintButton.title = 'Hint: Type part of the d_name or use a regex, check the console for results.';
+        HintButton.title = `Hint:\n> Type part of the d_name or use a regex, check the console for results.\n> Search empty string to get all devices on the server.\n> Right click on an <a> element in a match and select "Scroll into view" to see the device on the webpage.`;
 
         var my_style = document.createElement('style');
         my_style.innerHTML = `
@@ -102,6 +104,7 @@
 		div#main-UI * {font-family: Arial, Helvetica, sans-serif;}
         div#main-UI div {margin: 0px auto 0px auto; padding: 0px 0px 0px 0px;}
         div#main-UI input[type=checkbox] {margin: 5px 5px 5px 5px;}
+        div#main-UI #param-div {text-align: left;}
 	`; // apply to everything inside div
 
         document.head.appendChild(my_style);
@@ -162,7 +165,7 @@
         var index, node, matches = [],
             skipped = [];
         for ([index, node] of window.relevantNodes.entries()) {
-            if (node.nodeType == node.TEXT_NODE && node.nodeValue.search(RegExp(`d_name: .*${d_name}`, 'i')) != -1) {
+            if (node.nodeType == node.TEXT_NODE && node.nodeValue.search(RegExp(`d_name: .*${d_name}`, params.case_sensitive ? '' : 'i')) != -1) {
                 if (params.no_project && node.nodeValue.trim().search(/project:$/) != -1 && (node.nextSibling.getAttribute('onclick') && node.nextSibling.getAttribute('onclick').indexOf('open_project(') != -1)) {
                     skipped.push([node, window.relevantNodes[index - 1]]);
                 } else {
