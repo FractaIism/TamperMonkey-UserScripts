@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IoTTalk Delete Device
 // @namespace    Fractalism
-// @version      1.1.1
+// @version      1.1.2
 // @description  Delete multiple devices in IoTTalk using regular expressions
 // @author       Fractalism
 // @match        http*://*.iottalk.tw/list_all
