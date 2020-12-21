@@ -8,7 +8,7 @@
 // @grant        GM_download
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
     var title = document.getElementById("tr1").innerText
@@ -24,16 +24,16 @@
     }`
     text_replace.style.color = "darkseagreen"
     document.head.appendChild(kdd_style)
-    if(typeof musicfile === "undefined") {
+    if (typeof musicfile === "undefined") {
         text_replace.innerHTML = "Could not find music file"
         return
     }
-    var download_func = function(event) {
+    var download_func = function (event) {
         GM_download({
             url: musicfile,
             name: title,
             saveAs: false,
-            onerror: function(download) {
+            onerror: function (download) {
                 alert("Download failed\nError: " + download.error + "\nDetails: " + download.details.current + "\n\nTry right click -> 'Save As'")
             }
         })
