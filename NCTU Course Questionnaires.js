@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NCTU Course Questionnaires
 // @namespace    https://github.com/FractaIism/TamperMonkey-UserScripts
-// @version      1.2
+// @version      1.2.1
 // @description  Autofill course questionnaires
 // @author       Fractalism
 // @match        http*://course.nctu.edu.tw/TeachPoll/question.asp
@@ -38,17 +38,17 @@
                 if (buttons.length == 0) return;
                 let ans = getAns(part_index, buttons.length);
                 if (buttons[ans - 1]) { // if selected score exists
-                    console.log(row_index + " case 1: normal")
+                    //console.log(row_index + " case 1: normal")
                     buttons[ans - 1].checked = true;
                 } else if (ans > buttons.length - 1) {
-                    console.log(row_index + " case 2: overflow")
+                    //console.log(row_index + " case 2: overflow")
                     buttons[buttons.length - 1].checked = true;
                 } else if (ans < 0) {
-                    console.log(row_index + " case 3: underflow")
+                    //console.log(row_index + " case 3: underflow")
                     buttons[0].checked = true;
                 } else {
-                    console.log(row_index + " case 4: unexpected score, use default")
-                    console.log(buttons.length)
+                    //console.log(row_index + " case 4: unexpected score, use default")
+                    //console.log(buttons.length)
                     buttons[Math.floor(buttons.length / 2 - 1)].checked = true;
                 }
             })
@@ -79,10 +79,11 @@
             let optionNode = document.createElement('option');
             scoreSelect.appendChild(optionNode);
         }
-        scoreSelect.firstChild.textContent = '== 選擇分數 ==';
+        scoreSelect.firstChild.textContent = '== 選擇評分 ==';
+        let scoreText = ['', '非常滿意', '滿意', '普通', '不滿意', '非常不滿意']
         for (let i = 1; i <= 5; ++i) {
             scoreSelect.children[i].value = i;
-            scoreSelect.children[i].textContent = i;
+            scoreSelect.children[i].textContent = scoreText[i];
         }
         scoreSelect.lastChild.value = '-1';
         scoreSelect.lastChild.textContent = '隨機';
