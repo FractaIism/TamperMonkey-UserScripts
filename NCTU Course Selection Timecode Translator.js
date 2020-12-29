@@ -1,10 +1,13 @@
 // ==UserScript==
 // @name         NCTU Course Selection Timecode Translator
 // @namespace    https://github.com/FractaIism/TamperMonkey-UserScripts
-// @version      1.0
+// @version      1.1
 // @description  Change course timecodes back to old format
 // @author       Fractalism
 // @match        http*://course.nctu.edu.tw/adList.asp
+// @match        http*://course.nctu.edu.tw/adDo.asp
+// @match        http*://course.nctu.edu.tw/adNow.asp
+// @run-at       document-end
 // @grant        none
 // ==/UserScript==
 
@@ -40,11 +43,19 @@
         'd': 'L', // 21:30 ~ 22:20
     });
 
+    var page;
+    if (window.location.href.match(/https?:\/\/course\.nctu\.edu\.tw\/adList\.asp/)) {
+        page = 0; // 課程加選
+    } else if (window.location.href.match(/https?:\/\/course\.nctu\.edu\.tw\/adDo\.asp/)) {
+        page = 1; // 課程加選後der查詢選課
+    } else if (window.location.href.match(/https?:\/\/course\.nctu\.edu\.tw\/adNow\.asp/)) {
+        page = 1; // 查詢選課狀況(網頁編排同上)
+    }
     var tables = document.querySelectorAll('table');
-    var table = tables[tables.length - 1];
+    var table = tables[(page == 0) ? tables.length - 1 : 1];
     for (const [idx, tr] of Array.from(table.firstElementChild.children).entries()) {
         if (idx >= 2 && tr.childElementCount > 10) { // rough way to guess which rows contain timecode
-            var tdElmt = tr.children[12];
+            var tdElmt = tr.children[(page == 0) ? 12 : 7];
             var fontElmt = tdElmt.firstChild;
             var new_timecode = fontElmt.firstChild.data;
             var location = fontElmt.firstElementChild.textContent.substr(1); // unchanged, unused
