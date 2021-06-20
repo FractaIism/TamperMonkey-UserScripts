@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name         NCTU Course Questionnaires
+// @name         NYCU Course Questionnaires
 // @namespace    https://github.com/FractaIism/TamperMonkey-UserScripts
-// @version      1.2.1
+// @version      1.2.2
 // @description  Autofill course questionnaires
 // @author       Fractalism
-// @match        http*://course.nctu.edu.tw/TeachPoll/question.asp
+// @match        http*://course.nycu.edu.tw/TeachPoll/question.asp
 // @grant        none
 // ==/UserScript==
 
